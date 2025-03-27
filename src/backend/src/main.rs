@@ -8,12 +8,8 @@ use tower_http::cors::{CorsLayer, Any};
 use http::{Method, header::{CONTENT_TYPE, ACCEPT}};
 
 
-pub mod types;
-use types;
-
-async fn hello_world() -> String {
-    return "XMLFuckGang".to_string();
-}
+pub mod database;
+use database::mongo_funcs;
 
 async fn preflight_response() -> Response {
     let response = Response::builder()
@@ -29,6 +25,8 @@ async fn preflight_response() -> Response {
 
 #[tokio::main]
 async fn main() {
+    let mongo_client = mongo_funcs::MongoClient::connect().await;
+
     let cors = CorsLayer::new()
         .allow_origin(Any)
         .allow_methods([Method::POST, Method::OPTIONS])
