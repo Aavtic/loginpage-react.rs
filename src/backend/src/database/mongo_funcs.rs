@@ -5,6 +5,7 @@ use bson::doc;
 use crate::types::UserCredential;
 
 
+#[derive(Clone)]
 pub struct MongoClient {
     client: Client,
 }
