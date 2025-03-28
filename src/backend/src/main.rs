@@ -30,7 +30,9 @@ const USERS_COLLECTION: &str = "users_collection";
 const USERS_DATABASE: &str = "TestDB";
 
 
+#[debug_handler]
 async fn user_login(State(mongo_client): State<MongoClient>, Json(login_request): Json<UserLoginRequest>) -> Json<UserLoginResponse>{
+    println!("LOG:Request to Login:{}", serde_json::to_string(&login_request).unwrap());
     let status: LoginStatus;
     if !mongo_client.check_user_exists(USERS_DATABASE, USERS_COLLECTION, &login_request.username).await {
         status = LoginStatus::UserNameOrPasswordNotFound;
@@ -48,18 +50,21 @@ async fn user_login(State(mongo_client): State<MongoClient>, Json(login_request)
 
     match status {
         LoginStatus::Success => {
+            println!("LOG: Login Successful for {}", login_request.username);
             return Json(UserLoginResponse{
                 status,
                 sessionkey: Uuid::new_v4().to_string(),
             });
         },
         LoginStatus::WrongPassword => {
+            println!("LOG: Wrong password attempt for {}", login_request.username);
             return Json(UserLoginResponse{
                 status,
                 sessionkey:"".to_string(),
             });
         },
         LoginStatus::UserNameOrPasswordNotFound => {
+            println!("LOG: Wrong username or password attempt for {}", login_request.username);
             return Json(UserLoginResponse{
                 status,
                 sessionkey:"".to_string(),
@@ -129,6 +134,7 @@ async fn main() {
 
     let user_api_routes = Router::new()
         .route("/create_account", post(create_account))
+        .route("/login", post(user_login))
         .with_state(mongo_client);
 
     let app = Router::new()

@@ -1,7 +1,14 @@
 import { useState } from "react"
 
 import { create_post } from "../utils/api"
-import { CreateUserAccountRequest, CreateUserAccountResponse, CreateUserAccountStatus } from "../types/types"
+import { 
+    CreateUserAccountRequest,
+    CreateUserAccountResponse,
+    CreateUserAccountStatus,
+    UserLoginRequest,
+    UserLoginResponse,
+    LoginStatus,
+} from "../types/types"
 import { SERVER_IP, SERVER_PORT, ClientError} from "../types/types";
 
 import "../styles/login.css"
@@ -18,15 +25,38 @@ function LoginPage() {
         const creds = Object.fromEntries(formData.entries());
 
         if (action === 'login') {
+            const username: string = creds.username.toString();
+            const password: string = creds.password.toString();
+            type Request = UserLoginRequest;
+            type Response = UserLoginResponse;
+            let req: Request= {
+                username,
+                password,
+            }
+            let response = await create_post<Request, Response>(`http://${SERVER_IP}:${SERVER_PORT}/users/api/login`, req);
+            if (!response.ok) {
+                setTitle("Server or network seems to be dead...Hope it's the network");
+            } else {
+                console.log("status = " + response.data.status);
+                if (response.data.status === LoginStatus.WrongPassword) {
+                    setTitle("Wrong Password");
+                } else if (response.data.status === LoginStatus.UserNameOrPasswordNotFound) {
+                    setTitle("Username or password not found:/");
+                } else if (response.data.status === LoginStatus.Success) {
+                    setTitle("Welcome, " + username);
+                }
+            }
         } else if (action === 'create') {
             console.log('sending create acccout req');
             const username: string = creds.username.toString();
             const password: string = creds.password.toString();
-            let req: CreateUserAccountRequest = {
+            type Request = CreateUserAccountRequest;
+            type Response  = CreateUserAccountResponse;
+            let req: Request = {
                 username,
                 password,
             }
-            let response = await create_post<CreateUserAccountRequest, CreateUserAccountResponse>(`http://${SERVER_IP}:${SERVER_PORT}/users/api/create_account`, req);
+            let response = await create_post<Request, Response>(`http://${SERVER_IP}:${SERVER_PORT}/users/api/create_account`, req);
             if (!response.ok) {
                 setTitle("Server or network seems to be dead...Hope it's the network");
             } else {
@@ -37,7 +67,8 @@ function LoginPage() {
                     console.log("Changing...");
                     setTitle("Too slow, that user already exists lol");
                 } else if (response.data.status === CreateUserAccountStatus.Success){
-                    setTitle("Welcome, " + username);
+                    console.log("Created!");
+                    setTitle("Account Created!, " + username);
                 }
             }
         }

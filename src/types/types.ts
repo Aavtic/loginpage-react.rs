@@ -7,9 +7,9 @@ export interface UserLoginRequest {
 }
 
 export enum LoginStatus {
-    Success,
-    WrongPassword,
-    UserNameOrPasswordNotFound,
+    Success = "Success",
+    WrongPassword = "WrongPassword",
+    UserNameOrPasswordNotFound = "UserNameOrPasswordNotFound",
 }
 
 export interface UserLoginResponse {
@@ -23,7 +23,7 @@ export interface CreateUserAccountRequest {
 }
 
 export enum CreateUserAccountStatus {
-    Success = "Status",
+    Success = "Success",
     UsernameAlreadyExists = "UsernameAlreadyExists",
     // Client Side Added. Possibly network error or server side error. used when the fetch request doesn't complete correctly.
     ServerError = "ServerError",
