@@ -8,30 +8,35 @@ pub struct UserLoginRequest {
     pub password: String,
 }
 
+#[derive(Serialize, Deserialize)]
 pub enum LoginStatus {
     Success,
     WrongPassword,
     UserNameOrPasswordNotFound,
 }
 
+#[derive(Serialize, Deserialize)]
 pub struct UserLoginResponse {
     status: LoginStatus,
     sessionkey: String,
 }
 
+#[derive(Serialize, Deserialize)]
 pub struct CreateUserAccountRequest {
-    username: String,
-    password: String,
+    pub username: String,
+    pub password: String,
 }
 
+#[derive(Serialize, Deserialize)]
 pub enum CreateUserAccountStatus {
     Success,
-    UserNameAlreadyExists,
+    UsernameAlreadyExists,
 }
 
+#[derive(Serialize, Deserialize)]
 pub struct CreateUserAccountResponse {
-    status: CreateUserAccountStatus,
-    sessionkey: String, 
+    pub status: CreateUserAccountStatus,
+    pub sessionkey: String, 
 }
 
 // Database Types
