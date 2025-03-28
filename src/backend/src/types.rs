@@ -17,8 +17,8 @@ pub enum LoginStatus {
 
 #[derive(Serialize, Deserialize)]
 pub struct UserLoginResponse {
-    status: LoginStatus,
-    sessionkey: String,
+    pub status: LoginStatus,
+    pub sessionkey: String,
 }
 
 #[derive(Serialize, Deserialize)]

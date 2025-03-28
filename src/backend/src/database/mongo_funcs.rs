@@ -44,3 +44,18 @@ impl MongoClient {
         collection.insert_one(user_creds).await.unwrap();
     }
 }
+
+// Functions for retrieving stuff from the collection
+impl MongoClient {
+    /// Function to get password from a collection of type `UserCredential` as defined in types.rs.
+    /// TODO: Make this more generic.
+    pub async fn get_password(&self, db_name: &str, coll: &str,  username: &str) -> Option<String> {
+        let collection = &self.client.database(db_name).collection::<UserCredential>(coll);
+        let result = collection.find_one(doc! {"username": username}).await;
+        if let Ok(Some(creds)) = result {
+            return Some(creds.password);
+        } else {
+            return None;
+        }
+    }
+}

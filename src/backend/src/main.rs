@@ -20,12 +20,53 @@ use types::{
     CreateUserAccountRequest, 
     CreateUserAccountResponse,
     CreateUserAccountStatus,
+    UserLoginRequest,
+    UserLoginResponse,
+    LoginStatus,
     UserCredential,
 };
 
 const USERS_COLLECTION: &str = "users_collection";
 const USERS_DATABASE: &str = "TestDB";
 
+
+async fn user_login(State(mongo_client): State<MongoClient>, Json(login_request): Json<UserLoginRequest>) -> Json<UserLoginResponse>{
+    let status: LoginStatus;
+    if !mongo_client.check_user_exists(USERS_DATABASE, USERS_COLLECTION, &login_request.username).await {
+        status = LoginStatus::UserNameOrPasswordNotFound;
+    } else {
+        if let Some(password) = mongo_client.get_password(USERS_DATABASE, USERS_COLLECTION, &login_request.username).await {
+            if password == login_request.password {
+                status = LoginStatus::Success;
+            } else {
+                status = LoginStatus::WrongPassword;
+            }
+        } else {
+            status = LoginStatus::UserNameOrPasswordNotFound;
+        }
+    }
+
+    match status {
+        LoginStatus::Success => {
+            return Json(UserLoginResponse{
+                status,
+                sessionkey: Uuid::new_v4().to_string(),
+            });
+        },
+        LoginStatus::WrongPassword => {
+            return Json(UserLoginResponse{
+                status,
+                sessionkey:"".to_string(),
+            });
+        },
+        LoginStatus::UserNameOrPasswordNotFound => {
+            return Json(UserLoginResponse{
+                status,
+                sessionkey:"".to_string(),
+            });
+        },
+    }
+}
 
 #[debug_handler]
 async fn create_account(State(mongo_client): State<MongoClient>, Json(create_account_req): Json<CreateUserAccountRequest>) -> Json<CreateUserAccountResponse>{
