@@ -33,9 +33,9 @@ impl MongoClient {
         let collection = &self.client.database(db_name).collection::<UserCredential>(coll);
         let result = collection.find_one(doc! {"username": username}).await;
         if let Ok(Some(_username)) = result {
-            return false;
+            return true;
         }
-        return true;
+        return false;
     }
 
     pub async fn insert_user(&self, db_name: &str, coll: &str, user_creds: UserCredential) {

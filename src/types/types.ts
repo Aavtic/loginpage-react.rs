@@ -6,7 +6,6 @@ export interface UserLoginRequest {
     password: string,
 }
 
-
 export enum LoginStatus {
     Success,
     WrongPassword,
@@ -24,12 +23,13 @@ export interface CreateUserAccountRequest {
 }
 
 export enum CreateUserAccountStatus {
-    Success,
-    UserNameAlreadyExists,
+    Success = "Status",
+    UsernameAlreadyExists = "UsernameAlreadyExists",
+    // Client Side Added. Possibly network error or server side error. used when the fetch request doesn't complete correctly.
+    ServerError = "ServerError",
 }
 
 export interface CreateUserAccountResponse {
     status: CreateUserAccountStatus,
-    sessionkey: string, 
 }
 

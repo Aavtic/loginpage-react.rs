@@ -4,7 +4,7 @@ use axum::{
     http::StatusCode,
     body::Body,
 };
-use axum::extract::{Json, State, FromRequest};
+use axum::extract::{Json, State};
 use axum::debug_handler;
 use tower_http::cors::{CorsLayer, Any};
 use http::{Method, header::{CONTENT_TYPE, ACCEPT}};
@@ -23,6 +23,9 @@ use types::{
     UserCredential,
 };
 
+const USERS_COLLECTION: &str = "users_collection";
+const USERS_DATABASE: &str = "TestDB";
+
 
 #[debug_handler]
 async fn create_account(State(mongo_client): State<MongoClient>, Json(create_account_req): Json<CreateUserAccountRequest>) -> Json<CreateUserAccountResponse>{
@@ -34,11 +37,12 @@ async fn create_account(State(mongo_client): State<MongoClient>, Json(create_acc
 
     let status: CreateUserAccountStatus;
 
-    if !mongo_client.check_user_exists("TestDB", "users", &create_account_req.username).await {
-        mongo_client.insert_user("TestDB", "users", user_creds);
+    if !mongo_client.check_user_exists(USERS_DATABASE, USERS_COLLECTION, &create_account_req.username).await {
+        mongo_client.insert_user(USERS_DATABASE, USERS_COLLECTION, user_creds).await;
         println!("LOG: Created user account!\nUser: {}, Password: {}", create_account_req.username, "*".repeat(create_account_req.password.len()));
         status = CreateUserAccountStatus::Success;
     } else {
+        println!("LOG: User Creation Denied, User Already exists");
         status = CreateUserAccountStatus::UsernameAlreadyExists;
     }
 
@@ -46,14 +50,11 @@ async fn create_account(State(mongo_client): State<MongoClient>, Json(create_acc
         CreateUserAccountStatus::Success => {
             return Json(CreateUserAccountResponse {
                 status,
-                // TODO: Create Session keys which are signed by the server.
-                sessionkey: Uuid::new_v4().to_string(),
             });
         },
         CreateUserAccountStatus::UsernameAlreadyExists => {
             return Json(CreateUserAccountResponse {
                 status,
-                sessionkey: "69".to_string(),
             });
         },
         
@@ -91,7 +92,7 @@ async fn main() {
 
     let app = Router::new()
         .nest("/users/api/", preflight_route)
-        .nest("/user/api/", user_api_routes)
+        .nest("/users/api/", user_api_routes)
         .layer(cors);
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:8081").await.unwrap();

@@ -36,7 +36,6 @@ pub enum CreateUserAccountStatus {
 #[derive(Serialize, Deserialize)]
 pub struct CreateUserAccountResponse {
     pub status: CreateUserAccountStatus,
-    pub sessionkey: String, 
 }
 
 // Database Types
