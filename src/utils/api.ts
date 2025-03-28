@@ -18,7 +18,6 @@ export async function create_account(username: string, password: string): Promis
        if (!response.ok) {
            let response: CreateUserAccountResponse = {
                status: CreateUserAccountStatus.ServerError,
-               sessionkey: "",
            };
            return response;
        }
@@ -26,7 +25,6 @@ export async function create_account(username: string, password: string): Promis
     } catch (error) {
         return {
             status: CreateUserAccountStatus.ServerError,
-            sessionkey: "",
         };
     }
 }
