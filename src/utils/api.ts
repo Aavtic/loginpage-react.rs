@@ -1,5 +1,35 @@
-import { SERVER_IP, SERVER_PORT } from "../types/types";
+import { SERVER_IP, SERVER_PORT, ClientError, Result} from "../types/types";
 import { CreateUserAccountRequest, CreateUserAccountResponse, CreateUserAccountStatus } from "../types/types";
+
+
+export async function create_post<PostType, ExpectedType>(url: string, data: PostType): Promise<Result<ExpectedType>> {
+    try {
+        const response = await fetch (url,
+               {
+                    "method": "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(data)
+       });
+       if (!response.ok) {
+           return  {
+               ok: true,
+               data: await response.json() as ExpectedType,
+           }
+       }
+
+       return  {
+           ok: true,
+           data: await response.json() as ExpectedType,
+       }
+    } catch (e) {
+        return {
+            ok: false,
+            error: ClientError.ClientCooked,
+        }
+    }
+}
 
 export async function create_account(username: string, password: string): Promise<CreateUserAccountResponse> {
     const request:CreateUserAccountRequest  = {

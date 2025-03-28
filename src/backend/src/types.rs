@@ -3,6 +3,7 @@ use serde::{Serialize, Deserialize};
 
 // User Auth Types
 
+#[derive(Serialize, Deserialize)]
 pub struct UserLoginRequest {
     pub username: String,
     pub password: String,
