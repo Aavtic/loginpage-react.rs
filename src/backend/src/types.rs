@@ -19,6 +19,7 @@ pub enum LoginStatus {
 #[derive(Serialize, Deserialize)]
 pub struct UserLoginResponse {
     pub status: LoginStatus,
+    // Remove this after setting the sessionkey by using Set-Cookie Header.
     pub sessionkey: String,
 }
 
