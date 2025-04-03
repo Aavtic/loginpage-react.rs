@@ -1,12 +1,12 @@
 use axum::{routing::Router, routing::{post, options}};
-use axum::response::Response;
+use axum::response::{Response, IntoResponse};
 use axum::{
-    http::StatusCode,
+    http::{StatusCode, HeaderValue},
     body::Body,
 };
 use axum::extract::{Json, State};
 use axum::debug_handler;
-use tower_http::cors::{CorsLayer, Any};
+use tower_http::cors::CorsLayer;
 use http::{Method, header::{CONTENT_TYPE, ACCEPT}};
 use serde_json;
 use uuid::Uuid;
@@ -29,9 +29,11 @@ use types::{
 const USERS_COLLECTION: &str = "users_collection";
 const USERS_DATABASE: &str = "TestDB";
 
+const FRONTEND: &str = "http://192.168.219.165:5173";
+
 
 #[debug_handler]
-async fn user_login(State(mongo_client): State<MongoClient>, Json(login_request): Json<UserLoginRequest>) -> Json<UserLoginResponse>{
+async fn user_login(State(mongo_client): State<MongoClient>, Json(login_request): Json<UserLoginRequest>) -> impl IntoResponse {
     println!("LOG:Request to Login:{}", serde_json::to_string(&login_request).unwrap());
     let status: LoginStatus;
     if !mongo_client.check_user_exists(USERS_DATABASE, USERS_COLLECTION, &login_request.username).await {
@@ -51,24 +53,33 @@ async fn user_login(State(mongo_client): State<MongoClient>, Json(login_request)
     match status {
         LoginStatus::Success => {
             println!("LOG: Login Successful for {}", login_request.username);
-            return Json(UserLoginResponse{
-                status,
-                sessionkey: Uuid::new_v4().to_string(),
-            });
+            let sessionkey = Uuid::new_v4().to_string();
+            // Set a permanent cookie with session key which expires in 5 days.
+            let cookie_header = format!("sessionkey={}; Max-Age=432000; Path=/; HttpOnly", sessionkey);
+            return (
+                [(http::header::SET_COOKIE, cookie_header)],
+                Json(UserLoginResponse {
+                    status,
+                    sessionkey,
+                }));
         },
         LoginStatus::WrongPassword => {
             println!("LOG: Wrong password attempt for {}", login_request.username);
-            return Json(UserLoginResponse{
-                status,
-                sessionkey:"".to_string(),
-            });
+            return (
+                [(http::header::SET_COOKIE, "".to_string())],
+                Json(UserLoginResponse {
+                    status,
+                    sessionkey: "".to_string(),
+                }));
         },
         LoginStatus::UserNameOrPasswordNotFound => {
             println!("LOG: Wrong username or password attempt for {}", login_request.username);
-            return Json(UserLoginResponse{
-                status,
-                sessionkey:"".to_string(),
-            });
+            return (
+                [(http::header::SET_COOKIE, "".to_string())],
+                Json(UserLoginResponse {
+                    status,
+                    sessionkey: "".to_string(),
+                }));
         },
     }
 }
@@ -92,19 +103,7 @@ async fn create_account(State(mongo_client): State<MongoClient>, Json(create_acc
         status = CreateUserAccountStatus::UsernameAlreadyExists;
     }
 
-    match status {
-        CreateUserAccountStatus::Success => {
-            return Json(CreateUserAccountResponse {
-                status,
-            });
-        },
-        CreateUserAccountStatus::UsernameAlreadyExists => {
-            return Json(CreateUserAccountResponse {
-                status,
-            });
-        },
-        
-    }
+    return Json(CreateUserAccountResponse{status});
 }
 
 
@@ -125,9 +124,10 @@ async fn main() {
     let mongo_client = MongoClient::connect().await;
 
     let cors = CorsLayer::new()
-        .allow_origin(Any)
+        .allow_origin(FRONTEND.parse::<HeaderValue>().unwrap())
         .allow_methods([Method::POST, Method::OPTIONS])
-        .allow_headers([CONTENT_TYPE, ACCEPT]);
+        .allow_headers([CONTENT_TYPE, ACCEPT])
+        .allow_credentials(true);
 
     let preflight_route= Router::new()
         .route("/", options(preflight_response));
