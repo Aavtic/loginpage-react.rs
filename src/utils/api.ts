@@ -2,16 +2,28 @@ import { SERVER_IP, SERVER_PORT, ClientError, Result} from "../types/types";
 import { CreateUserAccountRequest, CreateUserAccountResponse, CreateUserAccountStatus } from "../types/types";
 
 
-export async function create_post<PostType, ExpectedType>(url: string, data: PostType): Promise<Result<ExpectedType>> {
+export async function create_post<PostType, ExpectedType>(url: string, data: PostType, credentials: boolean): Promise<Result<ExpectedType>> {
     try {
-        const response = await fetch (url,
-               {
-                    "method": "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify(data)
-       });
+        let headers: RequestInit;
+        if (credentials) {
+            headers = {
+                "method": "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                credentials: 'include',
+                body: JSON.stringify(data)
+           }
+        } else {
+            headers = {
+                "method": "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(data)
+           }
+       }
+       const response = await fetch (url, headers);
        if (!response.ok) {
            return  {
                ok: true,
