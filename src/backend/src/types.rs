@@ -48,3 +48,21 @@ pub struct UserCredential {
     pub password: String,
     pub session_key_pool: Vec<String>,
 }
+
+
+// User Session Status
+
+#[derive(Serialize, Deserialize)]
+pub enum UserSessionStatus {
+    Ok,
+    LoginRequired,
+}
+
+// User details to be made public
+
+#[derive(Serialize, Deserialize)]
+pub struct UserDetailsPublic {
+    pub status: UserSessionStatus,
+    pub username: String,
+    // TODO: Add more customized details relavant to each user.
+}
