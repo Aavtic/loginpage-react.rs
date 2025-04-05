@@ -77,4 +77,21 @@ impl MongoClient {
         let result = collection.update_one(filter, update).await.unwrap();
         return result;
     }
+
+    // Careful... Do not loose your session key.
+    // Your online identity relies on it.
+    //
+    // checks if a given session key is valid (present in the database). if it does
+    // returns the username otherwise None.
+    pub async fn validate_key(&self, db_name: &str, coll: &str, session_key: &str) -> Option<String> /* Username*/ {
+        let collection = &self.client.database(db_name).collection::<UserCredential>(coll);
+        let filter = doc!{"session_key_pool": doc!{"$elemMatch": doc!{"$eq": session_key}}};
+        let result = collection.find_one(filter).await.unwrap();
+
+        if let Some(user_credentials) = result {
+            return Some(user_credentials.username);
+        } else {
+            return None;
+        }
+    }
 }
