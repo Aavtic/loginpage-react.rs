@@ -1,5 +1,10 @@
 import { SERVER_IP, SERVER_PORT, ClientError, Result} from "../types/types";
-import { CreateUserAccountRequest, CreateUserAccountResponse, CreateUserAccountStatus } from "../types/types";
+import { 
+    CreateUserAccountRequest,
+    CreateUserAccountResponse,
+    CreateUserAccountStatus,
+    UserSessionStatus,
+} from "../types/types";
 
 
 export async function create_post<PostType, ExpectedType>(url: string, data: PostType, credentials: boolean): Promise<Result<ExpectedType>> {
@@ -68,5 +73,33 @@ export async function create_account(username: string, password: string): Promis
         return {
             status: CreateUserAccountStatus.ServerError,
         };
+    }
+}
+
+export async function create_get<ExpectedType>(url: string, credentials: boolean): Promise<Result<ExpectedType>> {
+    try {
+        let headers: RequestInit = {};
+        if (credentials) {
+            headers.credentials = "include";
+        }
+
+        const response = await fetch(url, headers);
+        if (response.ok) {
+            return {
+                ok: true,
+                data: response.json() as ExpectedType,
+            }
+        } else {
+            return {
+                ok: false,
+                error: await response.json(),
+            }
+        }
+
+    } catch (e) {
+        return {
+            ok: false,
+            error: ClientError.ClientCooked,
+        }
     }
 }

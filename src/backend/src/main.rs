@@ -29,7 +29,7 @@ use types::{
 const USERS_COLLECTION: &str = "users_collection";
 const USERS_DATABASE: &str = "TestDB";
 
-const FRONTEND: &str = "http://192.168.219.165:5173";
+const FRONTEND: &str = "http://192.168.137.166:5173";
 
 
 #[debug_handler]
@@ -135,6 +135,7 @@ async fn main() {
     let user_api_routes = Router::new()
         .route("/create_account", post(create_account))
         .route("/login", post(user_login))
+        //.route("/validate_session", post(user_login))
         .with_state(mongo_client);
 
     let app = Router::new()

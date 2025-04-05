@@ -48,6 +48,7 @@ function LoginPage() {
                     setTitle("Username or password not found:/");
                 } else if (response.data.status === LoginStatus.Success) {
                     setTitle("Welcome, " + username);
+                    window.location.href = `/user/${username}`;
                 }
             }
         } else if (action === 'create') {

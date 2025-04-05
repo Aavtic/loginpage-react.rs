@@ -1,4 +1,4 @@
-export const SERVER_IP = "192.168.219.165"
+export const SERVER_IP = "192.168.137.166"
 export const SERVER_PORT = 8081;
 
 export interface UserLoginRequest {
@@ -45,3 +45,10 @@ export type Result<T> =
     | { ok: true; data: T }
     | { ok: false; error: ClientError};
 
+
+// User Session Status
+
+export enum UserSessionStatus {
+    Ok,
+    LoginRequired,
+}
