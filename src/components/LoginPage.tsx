@@ -9,9 +9,9 @@ import {
     UserLoginResponse,
     LoginStatus,
 } from "../types/types"
-import { SERVER_IP, SERVER_PORT, ClientError} from "../types/types";
+import { SERVER_IP, SERVER_PORT } from "../types/types";
 
-import "../styles/login.css"
+import styles from "../styles/LoginPage.module.css"
 
 function LoginPage() {
     const [title, setTitle] = useState("CO-LOGIN");
@@ -23,17 +23,21 @@ function LoginPage() {
         const action = submitter?.value;
         const formData = new FormData(e.currentTarget);
         const creds = Object.fromEntries(formData.entries());
+        const username: string = creds.username.toString();
+        const password: string = creds.password.toString();
+        if (!username || !password) {
+            setTitle("Please Enter Username and Password");
+            return;
+        }
 
         if (action === 'login') {
-            const username: string = creds.username.toString();
-            const password: string = creds.password.toString();
             type Request = UserLoginRequest;
             type Response = UserLoginResponse;
             let req: Request= {
                 username,
                 password,
             }
-            let response = await create_post<Request, Response>(`http://${SERVER_IP}:${SERVER_PORT}/users/api/login`, req);
+            let response = await create_post<Request, Response>(`http://${SERVER_IP}:${SERVER_PORT}/users/api/login`, req, true);
             if (!response.ok) {
                 setTitle("Server or network seems to be dead...Hope it's the network");
             } else {
@@ -56,7 +60,7 @@ function LoginPage() {
                 username,
                 password,
             }
-            let response = await create_post<Request, Response>(`http://${SERVER_IP}:${SERVER_PORT}/users/api/create_account`, req);
+            let response = await create_post<Request, Response>(`http://${SERVER_IP}:${SERVER_PORT}/users/api/create_account`, req, true);
             if (!response.ok) {
                 setTitle("Server or network seems to be dead...Hope it's the network");
             } else {
@@ -78,17 +82,17 @@ function LoginPage() {
 
     return (
         <>
-            <div className="login_div">
+            <div className={ styles.login_div }>
                 <form onSubmit={loginCallback}>
-                    <h1 id="co_heading">{title}</h1>
-                    <label id="username_label" className="label_common" htmlFor="username"> Username:
-                        <input name="username" type="text" id="username_input" className="input_common"></input> <br />
+                    <h1 id= { styles.co_heading }>{title}</h1>
+                    <label id="username_label" className={ styles.label_common } htmlFor="username"> Username:
+                        <input name="username" type="text" id="username_input" className={ styles.input_common }></input> <br />
                     </label>
-                    <label id="password_label" className="label_common" htmlFor="password"> Password:
-                        <input name="password" type="password" id="password_input" className="input_common"></input> <br />
+                    <label id="password_label" className={ styles.label_common } htmlFor="password"> Password:
+                        <input name="password" type="password" id="password_input" className={ styles.input_common }></input> <br />
                     </label>
-                    <button type="submit" name="action" value="login" id="login_button" className="button_common">Login</button>
-                    <button type="submit" name="action" value="create" id="create_account_button" className="button_common">New Account</button>
+                    <button type="submit" name="action" value="login" id="login_button" className={ styles.button_common }>Login</button>
+                    <button type="submit" name="action" value="create" id="create_account_button" className={ styles.button_common }>New Account</button>
                 </form>
             </div>
         </>

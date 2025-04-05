@@ -1,4 +1,4 @@
-export const SERVER_IP = "192.168.2.165"
+export const SERVER_IP = "192.168.219.165"
 export const SERVER_PORT = 8081;
 
 export interface UserLoginRequest {
