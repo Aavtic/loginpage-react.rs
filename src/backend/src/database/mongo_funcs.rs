@@ -1,5 +1,6 @@
 use mongodb::Client;
 use mongodb::options::ClientOptions;
+use mongodb::results::UpdateResult;
 use bson::doc;
 
 use crate::types::UserCredential;
@@ -57,5 +58,23 @@ impl MongoClient {
         } else {
             return None;
         }
+    }
+}
+
+// User Session related Functions.
+
+impl MongoClient {
+    pub async fn add_session_key(&self, db_name: &str, coll: &str, session_key: &str, username: &str) -> UpdateResult {
+        let collection = &self.client.database(db_name).collection::<UserCredential>(coll);
+        // Unwraps because It's sure that the only logical call to this function will be
+        // after a user account is created. 
+        // Anyway if necessary the unwraps will be handled.
+        let mut session_pool = collection.find_one(doc! {"username": username}).await.unwrap().unwrap().session_key_pool;
+        session_pool.push(session_key.to_string());
+        let filter = doc!{"username": username};
+        let update = doc!{"$set": doc!{"session_key_pool": session_pool}};
+
+        let result = collection.update_one(filter, update).await.unwrap();
+        return result;
     }
 }

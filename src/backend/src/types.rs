@@ -46,6 +46,5 @@ pub struct CreateUserAccountResponse {
 pub struct UserCredential {
     pub username: String,
     pub password: String,
-    // TODO:
-    // previous session keys sessionkey: String
+    pub session_key_pool: Vec<String>,
 }
