@@ -1,10 +1,10 @@
-use axum::{routing::Router, routing::{post, options}};
+use axum::{routing::Router, routing::{get, post, options}};
 use axum::response::{Response, IntoResponse};
 use axum::{
     http::{StatusCode, HeaderValue},
     body::Body,
 };
-use axum::extract::{Json, State};
+use axum::extract::{Json, State, Path};
 use axum::debug_handler;
 use tower_http::cors::CorsLayer;
 use http::{Method, header::{CONTENT_TYPE, ACCEPT}};
@@ -24,12 +24,33 @@ use types::{
     UserLoginResponse,
     LoginStatus,
     UserCredential,
+    UserDetailsPublic,
+    UserSessionStatus,
 };
 
 const USERS_COLLECTION: &str = "users_collection";
 const USERS_DATABASE: &str = "TestDB";
 
-const FRONTEND: &str = "http://192.168.137.166:5173";
+const FRONTEND: &str = "http://192.168.219.165:5173";
+
+async fn validate_user(State(mongo_client): State<MongoClient>, Path(session_key): Path<String>) -> Json<UserDetailsPublic> {
+    let status: UserSessionStatus;
+    let username: String;
+    if let Some(name) = mongo_client.validate_key(USERS_DATABASE, USERS_COLLECTION, &session_key).await {
+        status = UserSessionStatus::Ok;
+        username = name;
+    } else {
+        status = UserSessionStatus::LoginRequired;
+        username = String::new();
+    }
+
+    return Json(
+        UserDetailsPublic {
+            status,
+            username,
+        }
+    );
+}
 
 
 #[debug_handler]
@@ -54,8 +75,10 @@ async fn user_login(State(mongo_client): State<MongoClient>, Json(login_request)
         LoginStatus::Success => {
             println!("LOG: Login Successful for {}", login_request.username);
             let sessionkey = Uuid::new_v4().to_string();
+            // Update db with session key.
+            mongo_client.add_session_key(USERS_DATABASE, USERS_COLLECTION, &sessionkey, &login_request.username).await; 
             // Set a permanent cookie with session key which expires in 5 days.
-            let cookie_header = format!("sessionkey={}; Max-Age=432000; Path=/; HttpOnly", sessionkey);
+            let cookie_header = format!("sessionkey={}; Max-Age=432000; Path=/", sessionkey);
             return (
                 [(http::header::SET_COOKIE, cookie_header)],
                 Json(UserLoginResponse {
@@ -90,6 +113,7 @@ async fn create_account(State(mongo_client): State<MongoClient>, Json(create_acc
     let user_creds = UserCredential {
         username: create_account_req.username.clone(),
         password: create_account_req.password.clone(),
+        session_key_pool: Vec::<String>::new(),
     };
 
     let status: CreateUserAccountStatus;
@@ -135,7 +159,7 @@ async fn main() {
     let user_api_routes = Router::new()
         .route("/create_account", post(create_account))
         .route("/login", post(user_login))
-        //.route("/validate_session", post(user_login))
+        .route("/validate_session/{session_key}", get(validate_user))
         .with_state(mongo_client);
 
     let app = Router::new()
