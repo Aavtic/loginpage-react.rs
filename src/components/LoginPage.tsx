@@ -37,6 +37,8 @@ function LoginPage() {
                 username,
                 password,
             }
+            // Only one cookie.
+            let cookie = document.cookie.split("=")[1];
             let response = await create_post<Request, Response>(`http://${SERVER_IP}:${SERVER_PORT}/users/api/login`, req, true);
             if (!response.ok) {
                 setTitle("Server or network seems to be dead...Hope it's the network");
