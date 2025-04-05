@@ -1,4 +1,4 @@
-export const SERVER_IP = "192.168.137.166"
+export const SERVER_IP = "192.168.219.165"
 export const SERVER_PORT = 8081;
 
 export interface UserLoginRequest {
@@ -49,6 +49,13 @@ export type Result<T> =
 // User Session Status
 
 export enum UserSessionStatus {
-    Ok,
-    LoginRequired,
+    Ok = "Ok",
+    LoginRequired = "LoginRequired",
+}
+
+// User details to be made public
+
+export interface UserDetailsPublic {
+    status: UserSessionStatus,
+    username: String,
 }

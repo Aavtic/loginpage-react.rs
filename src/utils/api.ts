@@ -87,7 +87,7 @@ export async function create_get<ExpectedType>(url: string, credentials: boolean
         if (response.ok) {
             return {
                 ok: true,
-                data: response.json() as ExpectedType,
+                data: await response.json() as ExpectedType,
             }
         } else {
             return {
