@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 
 import { create_post } from "../utils/api"
 import { 
@@ -14,6 +14,13 @@ import { SERVER_IP, SERVER_PORT } from "../types/types";
 import styles from "../styles/LoginPage.module.css"
 
 function LoginPage() {
+    useEffect(() => {
+        document.body.classList.add(styles.LoginBody);
+        return () => {
+          document.body.classList.remove(styles.LoginBody);
+        };
+    }, []);
+
     const [title, setTitle] = useState("CO-LOGIN");
     async function loginCallback(e: React.FormEvent<HTMLFormElement>) {
         console.log("clicked...");
