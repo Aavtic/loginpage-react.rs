@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>HTML 5 Boilerplate</title>
+    <link rel="stylesheet" href="login_page.css">
+  </head>
+  <body>
+
+    <div class="login_div">
+        <form onSubmit="loginFn(event)">
+            <h1 id= "co_heading">My Login Page</h1>
+            <label id="username_label" class="label_common" for="username"> Username:
+                <input name="username" type="text" id="username_input" class="input_common"></input> <br />
+            </label>
+            <label id="password_label" class="label_common" for="password"> Password:
+                <input name="password" type="password" id="password_input" class="input_common"></input> <br />
+            </label>
+            <button type="submit" name="action" value="login" id="login_button" class="button_common">Login</button>
+            <button type="submit" name="action" value="create" id="create_account_button" class="button_common">New Account</button>
+        </form>
+    </div>
+
+    <script>
+        function loginFn(e) {
+            e.preventDefault();
+            window.location.href = "./user_page.html"
+        }
+    </script>
+
+</body>
+</html>

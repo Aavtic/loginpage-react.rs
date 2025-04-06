@@ -1,0 +1,52 @@
+body {
+  color: #c40000;
+  background-color: #170106;
+  font-family: Iosevka Medium;
+}
+
+
+.parent {
+  display: flex;
+  height: 100vh;
+}
+
+.side_bar {
+  padding: 10px;
+  width: 120px;
+}
+
+#side_bar_username {
+  font-size: 22px;
+}
+
+
+.side_bar_button {
+  font-size: 20px;
+  margin-bottom: 10px;
+}
+
+.right {
+  flex: 1; /* Take remaining space */
+  display: grid;
+  padding: 10px;
+  grid-template-rows: auto 1fr;
+  background-color: inherit;
+}
+
+.navigation_bar {
+  display: flex;
+  justify-content: space-between; /* Even space between buttons */
+  padding: 10px;                  /* Optional spacing around buttons */
+  background-color: green;
+}
+
+.navigation_bar button {
+  flex: 1;                        /* Equal width */
+  margin: 0 5px;                  /* Spacing between buttons */
+}
+
+
+.nav_bar_button {
+  font-size: 16px;
+}
+
